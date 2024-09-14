@@ -4,6 +4,7 @@ import { faEnvelope, faLock, faTimes, faEye, faEyeSlash, faUser } from "@fortawe
 import { ethers } from 'ethers';
 import { WalletIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const AuthModals = ({ isLoginModalOpen, onClose, handleAuth }) => {
   const [email, setEmail] = useState('');
@@ -14,14 +15,26 @@ const AuthModals = ({ isLoginModalOpen, onClose, handleAuth }) => {
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
-  const handleSubmit = (e, type) => {
+  const handleSubmit = async (e, type) => {
     e.preventDefault();
-    handleAuth(type, email, password);
-    setEmail('');
-    setPassword('');
-    onClose();
-    navigate('/marketplace');
+    
+    try {
+      const response = await axios.post('http://localhost:8080/user/login', { email, password });
+  
+      if (response.data.success) {
+        console.log('Login successful');
+        handleAuth(type, email, password);
+        onClose();
+        navigate('/marketplace');
+      } else {
+        console.error('Login failed:', response.data);
+
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+    }
   };
+  
 
   const connectMetaMask = async () => {
     try {

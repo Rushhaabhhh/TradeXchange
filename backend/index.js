@@ -30,7 +30,7 @@ mongoose.connect(process.env.MONGO_URL, {
 // Routes
 const UserRoute = require('./Routes/UserRoute');
 
-app.use('/users', UserRoute);
+app.use('/user', UserRoute);
 
 // Error Handling Middleware
 app.use((err, res) => {

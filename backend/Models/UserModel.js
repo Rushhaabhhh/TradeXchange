@@ -3,8 +3,8 @@ const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema({
     username: {
         type: String,
-        required: true,
         unique: true,
+        default: "user",
     },
     email: {
         type: String,
@@ -28,3 +28,5 @@ const userSchema = new mongoose.Schema({
         default: ""
     }
 });
+
+module.exports = mongoose.model('User', userSchema);
