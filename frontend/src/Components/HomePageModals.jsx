@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEnvelope, faLock, faTimes, faEye, faEyeSlash, faUser } from "@fortawesome/free-solid-svg-icons";
+import { faEnvelope, faLock, faTimes, faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import { ethers } from 'ethers';
 import { WalletIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -10,6 +10,7 @@ const AuthModals = ({ isLoginModalOpen, onClose, handleAuth }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(''); 
 
   const navigate = useNavigate();
 
@@ -20,23 +21,40 @@ const AuthModals = ({ isLoginModalOpen, onClose, handleAuth }) => {
     
     try {
       const response = await axios.post('http://localhost:8080/user/login', { email, password });
-  
+      
       if (response.data.success) {
         console.log('Login successful');
         handleAuth(type, email, password);
         onClose();
         navigate('/marketplace');
       } else {
-        console.error('Login failed:', response.data);
-
+        switch (response.data.message) {
+          case 'Invalid user':
+            setErrorMessage('The email address you entered does not exist.');
+            break;
+          case 'Wrong password':
+            setErrorMessage('The password you entered is incorrect.');
+            break;
+          default:
+            setErrorMessage(response.data.message || 'Login failed');
+            break;
+        }
       }
     } catch (error) {
-      console.error('Login error:', error);
+      if (error.response) {
+        setErrorMessage('An error occurred while processing your request.');
+      } else if (error.request) {
+        setErrorMessage('No response from server. Please check your network connection.');
+      } else {
+        setErrorMessage('An unexpected error occurred. Please try again later.');
+      }
     }
   };
   
+  
 
   const connectMetaMask = async () => {
+    setErrorMessage(''); 
     try {
       if (typeof window.ethereum !== 'undefined') {
         await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -44,29 +62,29 @@ const AuthModals = ({ isLoginModalOpen, onClose, handleAuth }) => {
         const signer = provider.getSigner();
         const address = await signer.getAddress();
         console.log('Connected address:', address);
-      
-        const response = await fetch('////////////////////////', {
+
+        const response = await fetch('YOUR_API_ENDPOINT_HERE', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ walletAddress: address }),
         });
-  
+
         const data = await response.json();
         if (data.success) {
           console.log('Login successful');
         } else {
-          console.error('Login failed:', data.message);
+          setErrorMessage(data.message || 'Login failed');
         }
       } else {
-        console.error('MetaMask is not installed');
+        setErrorMessage('MetaMask is not installed');
       }
     } catch (error) {
-      console.error('Error connecting to MetaMask:', error);
       if (error.code === 4001) {
-        console.error('User rejected the connection request');
+        setErrorMessage('User rejected the connection request');
+      } else {
+        setErrorMessage('Error connecting to MetaMask');
       }
+      console.error('Error connecting to MetaMask:', error);
     }
   };
 
@@ -80,7 +98,7 @@ const AuthModals = ({ isLoginModalOpen, onClose, handleAuth }) => {
                 <span className="text-2xl font-bold text-white">Hello,</span>
                 <span className="text-2xl font-bold text-white">Welcome Back!</span>
               </div>
-              <button onClick={onClose} className="ml-4 mb-10 text-4xl text-red-800 hover:text-red-600">
+              <button onClick={onClose} className="ml-4 text-4xl text-red-800 hover:text-red-600">
                 <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
@@ -112,24 +130,27 @@ const AuthModals = ({ isLoginModalOpen, onClose, handleAuth }) => {
                   onClick={togglePasswordVisibility}
                   className="absolute right-3 top-3 text-gray-400"
                 >
-                  <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} className='mb-2' />
+                  <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
                 </button>
               </div>
 
-              <button type="submit" className="w-full bg-gray-900 p-2 rounded-xl"> Log In </button>
+              {errorMessage && (
+                <p className="text-red-500 text-center">{errorMessage}</p> 
+              )}
+
+              <button type="submit" className="w-full bg-gray-900 p-2 rounded-xl text-white">Log In</button>
             </form>
 
-            <p className='text-gray-400 text-center mt-2 mb-2'> OR</p>
+            <p className="text-gray-400 text-center mt-2 mb-2">OR</p>
 
-            <div >
+            <div>
               <button
                 onClick={connectMetaMask}
-                className="w-full bg-orange-500 text-white p-2 rounded-xl flex items-center justify-center"
+                className="w-full bg-orange-500 p-2 rounded-xl text-white flex items-center justify-center"
               >
                 <WalletIcon className="mr-2" /> Connect with MetaMask
               </button>
             </div>
-            
           </div>
         </div>
       )}

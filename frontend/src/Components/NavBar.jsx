@@ -23,23 +23,24 @@ const Navbar = () => {
   return (
     <nav className="fixed top-0 left-0 w-full bg-red-400 z-50">
       <div className="container mx-auto flex items-center justify-between p-4">
-        <div className="text-xl font-bold">
+        <div className="text-lg font-bold">
 
           <div className='flex items-center space-x-8 align-center '>
               <a href="/" className="flex items-center py-2">
-                <img src={logo} alt="Logo" className="h-10 w-10 mr-2" />
-                <span className="text-3xl font-bold text-white">TradeXchange</span>
+                <img src={logo} alt="Logo" className="h-9 w-9 mr-2" />
+                <span className="text-2xl font-bold text-white">TradeXchange</span>
               </a>
+              <div className="border-l-2 border-white h-6"></div>
             <button 
               onClick={() => Route.push('/create')}
-              className=" text-white text-3xl py-2 hover:text-opacity-80">
+              className=" text-white text-2xl hover:text-opacity-80">
               Create
             </button>
 
             <input 
-              type="text" 
-              placeholder="Search..." 
-              className="p-2 ml-20 border border-gray-300 rounded"
+              type = "text" 
+              placeholder = "Search..." 
+              className = "p-2 ml-20 border border-gray-300 rounded"
             />
           </div>
 

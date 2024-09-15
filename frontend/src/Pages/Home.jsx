@@ -60,7 +60,9 @@ const Home = () => {
     <div className="relative min-h-screen bg-dark-green-to-black text-white overflow-hidden">
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-0 left-0 w-1/3 h-1/3 bg-radial-green-tl opacity-40"></div>
-        <div className="absolute bottom-1/4 right-0 w-1/3 h-1/3 bg-radial-green-br opacity-40"></div>
+        <div className="absolute bottom-1/2 right-0 w-1/3 h-1/3 bg-radial-green-br opacity-40"></div>
+        <div className="absolute top-1/2 left-0 w-1/3 h-1/3 bg-radial-green-tl opacity-40"></div>
+        <div className="absolute bottom-0 right-0 w-1/3 h-1/3 bg-radial-green-br opacity-40"></div>
       </div>
 
       {/* Navbar */}
