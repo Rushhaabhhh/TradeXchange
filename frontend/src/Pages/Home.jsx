@@ -69,7 +69,7 @@ const Home = () => {
       <nav className="flex justify-between items-center  p-4 mt-1 fixed top-0 left-0 right-0 z-35">
         <div className="flex items-center">
           <img src={logo} alt="Logo" className="h-14 w-14 mr-2" />
-          <span className="text-4xl font-bold">TradeXchange</span>
+          <span className="text-4xl font-bold">Skill Xchange</span>
         </div>
         <div className="flex space-x-4 text-xl cursor-pointer mr-40">
           <Link to="Home" smooth={true} duration={500} offset={-90} className="text-white hover:text-green-400 transition-colors"> Home </Link>
