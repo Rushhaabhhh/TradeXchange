@@ -29,8 +29,10 @@ mongoose.connect(process.env.MONGO_URL, {
 
 // Routes
 const UserRoute = require('./Routes/UserRoute');
+const AssetRoute = require('./Routes/AssetRoute');
 
 app.use('/user', UserRoute);
+app.use('/asset', AssetRoute);
 
 // Error Handling Middleware
 app.use((err, res) => {

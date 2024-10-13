@@ -26,7 +26,11 @@ const userSchema = new mongoose.Schema({
     wallet_address: {
         type: String,
         default: ""
-    }
+    },
+    assets: [{ 
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Asset'
+    }]
 });
 
 module.exports = mongoose.model('User', userSchema);
