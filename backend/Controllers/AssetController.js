@@ -2,7 +2,7 @@ const User = require('../Models/UserModel');
 const Asset = require('../Models/AssetModel');
 
 exports.createAsset = async (req, res) => {
-    const { title, description, price, userId } = req.body;
+    const { title, description, price, userId, image } = req.body;
 
     try {
         const newAsset = new Asset({
@@ -10,6 +10,7 @@ exports.createAsset = async (req, res) => {
             description,
             price,
             createdBy : userId, 
+            image
         });
 
         const savedAsset = await newAsset.save();
@@ -37,18 +38,6 @@ exports.getAssetById = async (req, res) => {
         res.json(asset);
     } catch (err) {
         res.status(500).json({ message: err.message });
-    }
-};
-
-exports.updateAsset = async (req, res) => {
-    try {
-        const asset = await Asset.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        if (!asset) {
-            return res.status(404).json({ message: 'Asset not found' });
-        }
-        res.json(asset);
-    } catch (err) {
-        res.status(400).json({ message: err.message });
     }
 };
 

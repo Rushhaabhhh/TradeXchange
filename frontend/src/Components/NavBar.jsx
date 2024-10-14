@@ -7,9 +7,16 @@ import logo from "../assets/LogoIcon.png";
 import { WalletIcon, Search, User, ShoppingCart } from 'lucide-react';
 
 const Navbar = () => {
-  const [isProfileDropdownOpen, setProfileDropdownOpen] = useState(false);
-  const [account, setAccount] = useState(null);
   const navigate = useNavigate();
+  
+  const [isProfileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [isBuyModalOpen, setBuyModalOpen] = useState(false);
+  const [account, setAccount] = useState(null);
+  
+  const purchasedItems = [
+    { id: 1, name: 'Asset 1', price: '1 ETH' },
+    { id: 2, name: 'Asset 2', price: '0.5 ETH' },
+  ];
 
   // Connect MetaMask or any Ethereum wallet
   const connectMetaMask = async () => {
@@ -28,9 +35,9 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     try {
-      await axios.post('/api/logout'); // Replace with your actual logout API endpoint
-      // Optionally clear user data here
-      navigate('/'); // Redirect to homepage or login page
+      await axios.post('http://localhost:8080/user/logout'); 
+      
+      navigate('/'); 
     } catch (error) {
       console.error('Error logging out:', error);
     }
@@ -67,7 +74,7 @@ const Navbar = () => {
           </div>
         </div>
 
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-4 mr-24">
           <div>
             <button
               onClick={connectMetaMask}
@@ -86,21 +93,21 @@ const Navbar = () => {
               <User className="mr-2" /> Profile
             </button>
             {isProfileDropdownOpen && (
-              <div className="absolute right-0 mt-2 bg-white shadow-lg rounded w-48 z-20">
-                <a href="/profile" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">My Profile</a>
+              <div className="absolute right-0 mt-2 bg-gray-700 shadow-lg rounded-lg w-48 z-20">
+                <a href="/profile" className="block px-4 py-2 text-opacity-80 text-white hover:text-opacity-100">My Profile</a>
                 <button 
                   onClick={handleLogout} 
-                  className="block px-4 py-2 text-gray-700 hover:bg-gray-100">Logout
+                  className="px-4 py-2 text-opacity-80 text-white hover:text-opacity-100">Logout
                 </button>
               </div>
             )}
           </div>
 
-          <button
+          {/* <button
             className="bg-gray-700 bg-opacity-40 px-4 py-2 rounded-full text-white flex items-center justify-center shadow-lg hover:bg-gray-700 transition-all"
           >
             <ShoppingCart className="mx-auto mr-3" /> Buy
-          </button>
+          </button> */}
         </div>
       </div>
     </nav>

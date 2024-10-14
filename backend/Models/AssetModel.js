@@ -24,7 +24,7 @@ const assetSchema = new mongoose.Schema({
     },
     image: {
         type: String,
-        required: true,
+        required: false,
     },
 });
 

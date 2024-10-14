@@ -19,9 +19,13 @@ const userSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
     },
+    Image: {
+        type: String,
+        default: "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+    },
     token_balance: {
         type: Number,
-        default: 0
+        default: 100
     },
     wallet_address: {
         type: String,

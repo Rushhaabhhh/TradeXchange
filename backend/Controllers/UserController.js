@@ -34,7 +34,7 @@ exports.loginUser = async (req, res) => {
 // Signup Controller
 exports.signupUser = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { username, email, password } = req.body;
 
         let existingUser = await User.findOne({ email });
         if (existingUser) {
@@ -45,6 +45,7 @@ exports.signupUser = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, salt);
 
         const user = new User({
+            username,
             email,
             password: hashedPassword,
         });

@@ -5,7 +5,6 @@ const AssetController = require('../Controllers/AssetController');
 router.post('/', AssetController.createAsset);
 router.get('/', AssetController.getAllAssets);
 router.get('/:id', AssetController.getAssetById);
-router.put('/:id', AssetController.updateAsset);
 router.delete('/:id', AssetController.deleteAsset);
 
 router.post('/buy/:id', AssetController.buyAsset);
