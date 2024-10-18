@@ -66,7 +66,7 @@ const Marketplace = () => {
   useEffect(() => {
     const fetchAssets = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/asset/');
+        const response = await axios.get('https://tradexchange-7rcv.onrender.com/asset/');
         setAssets(response.data);
       } catch (error) {
         console.error('Error fetching assets:', error);
