@@ -10,13 +10,8 @@ const Navbar = () => {
   const navigate = useNavigate();
   
   const [isProfileDropdownOpen, setProfileDropdownOpen] = useState(false);
-  const [isBuyModalOpen, setBuyModalOpen] = useState(false);
   const [account, setAccount] = useState(null);
   
-  const purchasedItems = [
-    { id: 1, name: 'Asset 1', price: '1 ETH' },
-    { id: 2, name: 'Asset 2', price: '0.5 ETH' },
-  ];
 
   // Connect MetaMask or any Ethereum wallet
   const connectMetaMask = async () => {
@@ -25,6 +20,7 @@ const Navbar = () => {
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
         setAccount(accounts[0]);
         console.log('Connected to MetaMask:', accounts[0]);
+        localStorage.setItem('walletAddress', accounts[0]);
       } catch (error) {
         console.error('Error connecting to MetaMask:', error);
       }
@@ -47,7 +43,7 @@ const Navbar = () => {
     <nav className="fixed top-0 left-0 w-full bg-transparent z-50 backdrop-blur-lg">
       <div className="container mx-auto flex items-center justify-between p-4">
         <div className="flex items-center space-x-8 align-center">
-          <a href="/" className="flex items-center py-2">
+          <a href="/marketplace" className="flex items-center py-2">
             <img src={logo} alt="Logo" className="h-9 w-9 mr-2" />
             <span className="text-2xl font-bold text-white">TradeXchange</span>
           </a>

@@ -1,20 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Navbar from '../Components/NavBar';
+import { Pencil } from 'lucide-react';
 
 const UserProfile = () => {
   const [user, setUser] = useState(null);
   const [backgroundImage, setBackgroundImage] = useState(() => {
-    // Retrieve background image from localStorage if it exists
     return localStorage.getItem('backgroundImage') || null;
   });
-  const userId = localStorage.getItem('userId'); 
+  const [profileImage, setProfileImage] = useState(null);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [newUsername, setNewUsername] = useState('');
+  const [isNameHovered, setIsNameHovered] = useState(false);
+  const userId = localStorage.getItem('userId');
+  const walletAddress = localStorage.getItem('walletAddress');
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/user/${userId}`); 
+        const response = await axios.get(`http://localhost:8080/user/${userId}`);
         setUser(response.data);
+        setNewUsername(response.data.username); // Set initial username
       } catch (error) {
         console.error('Error fetching user data:', error);
       }
@@ -25,17 +31,53 @@ const UserProfile = () => {
     }
   }, [userId]);
 
-  const handleImageUpload = (e) => {
+  const handleProfileImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        setProfileImage(reader.result);
+
+        try {
+          await axios.put(`http://localhost:8080/update/${userId}`, { 
+            image: reader.result, 
+            walletAddress: walletAddress 
+          });
+        } catch (error) {
+          console.error('Error updating profile image and wallet address:', error);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleBackgroundImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
         setBackgroundImage(reader.result);
-        // Store the background image in localStorage
-        localStorage.setItem('backgroundImage', reader.result);
+        localStorage.setItem('backgroundImage', reader.result); 
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleUsernameChange = async () => {
+    try {
+      await axios.put(`http://localhost:8080/update/${userId}`, { username: newUsername });
+      setIsEditingName(false);
+    } catch (error) {
+      console.error('Error updating username:', error);
+    }
+  };
+
+  const handleNameMouseEnter = () => {
+    setIsNameHovered(true);
+  };
+
+  const handleNameMouseLeave = () => {
+    setIsNameHovered(false);
   };
 
   if (!user) {
@@ -46,41 +88,96 @@ const UserProfile = () => {
     <div className="min-h-screen bg-gray-900">
       <Navbar />
       <div className="relative top-24">
+
         <div
-          className="h-64 bg-cover bg-center"
+          className="h-64 bg-cover bg-center relative group"
           style={{ backgroundImage: `url(${backgroundImage})` }}
         >
+          <label htmlFor="background-input" className="cursor-pointer">
+            <Pencil className="absolute inset-0 m-auto text-white cursor-pointer opacity-0 group-hover:opacity-80" size={40} />
+          </label>
           <input
+            id="background-input"
             type="file"
             accept="image/*"
-            onChange={handleImageUpload}
-            className="absolute top-2 right-2 p-1 bg-gray-800 text-white rounded border border-gray-600 cursor-pointer"
+            onChange={handleBackgroundImageUpload}
+            className="hidden"
           />
         </div>
 
-        {/* User Image on Top of the Banner */}
-        <div className="absolute top-40 left-4 flex flex-col items-center">
-          <img
-            src={user.image}
-            alt={`${user.username}'s profile`}
-            className="h-24 w-24 rounded-full border-4 border-gray-900 shadow-lg"
-          />
-          {/* User Info Below the Image */}
-          <div className="mt-2 text-center text-white">
-            <h1 className="text-xl font-bold">{user.username}</h1>
-            <p className="text-gray-400">{user.wallet_address}</p>
-            <p className="text-gray-400">Joined {new Date(user.created_at).toLocaleDateString()}</p>
+        <div className="absolute top-28 left-8 flex flex-col items-center">
+
+          <div className="relative group">
+            <img
+              src={profileImage || user.image}
+              alt={`${user.username}'s profile`}
+              className="h-44 w-44 rounded-full border-4 border-gray-900 shadow-lg"
+            />
+            <label htmlFor="profile-input" className="cursor-pointer">
+              <Pencil className="absolute inset-0 m-auto text-white cursor-pointer opacity-0 group-hover:opacity-80" size={40} />
+            </label>
+            <input
+              id="profile-input"
+              type="file"
+              accept="image/*"
+              onChange={handleProfileImageUpload}
+              className="hidden"
+            />
+          </div>
+
+          <div
+            className="mt-2 text-white"
+            onMouseEnter={handleNameMouseEnter}
+            onMouseLeave={handleNameMouseLeave}
+          >
+            {isEditingName ? (
+              <div className="flex items-center">
+                <input
+                  type="text"
+                  value={newUsername}
+                  onChange={(e) => setNewUsername(e.target.value)}
+                  className="bg-gray-700 text-white rounded p-1 text-2xl font-bold"
+                />
+                <button
+                  onClick={handleUsernameChange}
+                  className="ml-2 text-green-400"
+                >
+                  Save
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center">
+                <h1 className="text-4xl font-bold">{newUsername}</h1>
+                {isNameHovered && (
+                  <Pencil
+                    className="ml-2 text-white cursor-pointer"
+                    size={20}
+                    onClick={() => setIsEditingName(true)}
+                  />
+                )}
+              </div>
+            )}
+
+            <div className="flex items-center space-x-6 mt-2">
+              <p className="text-white text-lg">
+                {walletAddress.slice(0, 5)}...{walletAddress.slice(-4)}
+              </p>
+              <p className="text-gray-400 text-lg">
+                Joined {new Date(user.created_at).toLocaleDateString()}
+              </p>
+            </div>
           </div>
         </div>
       </div>
 
+      {/* Assets Section */}
       <div className="mt-64 mx-4">
         <h2 className="text-lg font-semibold text-white">Assets Owned</h2>
         <div className="mt-2 bg-gray-800 rounded-lg p-4 shadow-lg">
           {user.assets.length > 0 ? (
             <ul className="list-disc list-inside text-white">
               {user.assets.map((asset) => (
-                <li key={asset._id} className="mt-2">{asset.title}</li> 
+                <li key={asset._id} className="mt-2">{asset.title}</li>
               ))}
             </ul>
           ) : (
