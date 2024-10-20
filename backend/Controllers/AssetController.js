@@ -1,16 +1,27 @@
-const User = require('../Models/UserModel');
 const Asset = require('../Models/AssetModel');
+const User = require('../Models/UserModel');
+const blockchainService = require('../Contracts/blockchain');
 
 exports.createAsset = async (req, res) => {
     const { title, description, price, userId, image } = req.body;
 
     try {
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const blockchainResult = await blockchainService.createAsset(title, price, user.walletAddress);
+
         const newAsset = new Asset({
             title,
             description,
             price,
-            createdBy : userId, 
-            image
+            createdBy: userId,
+            image,
+            tokenId: blockchainResult.events.Transfer.returnValues.tokenId,
+            owner: user.walletAddress,
+            transactionHash: blockchainResult.transactionHash
         });
 
         const savedAsset = await newAsset.save();
@@ -54,50 +65,81 @@ exports.deleteAsset = async (req, res) => {
 };
 
 exports.buyAsset = async (req, res) => {
-    const userId = req.body.userId; 
+    const { userId } = req.body;
     try {
         const asset = await Asset.findById(req.params.id);
-        const user = await User.findById(userId);
-
-        if (!asset || !user) {
+        const buyer = await User.findById(userId);
+        if (!asset || !buyer) {
             return res.status(404).json({ message: 'Asset or User not found' });
         }
 
-        if (user.token_balance < asset.price) {
-            return res.status(400).json({ message: 'Insufficient funds' });
-        }
+        const blockchainResult = await blockchainService.buyAsset(asset.tokenId, asset.price, buyer.walletAddress);
 
-        // Deduct price from user's balance and add asset to user's assets
-        user.token_balance -= asset.price;
-        user.assets.push(asset._id);
-        await user.save();
+        asset.owner = buyer.walletAddress;
+        asset.isForSale = false;
+        asset.transactionHash = blockchainResult.transactionHash;
+        await asset.save();
 
-        res.status(200).json({ message: 'Asset purchased successfully', user });
+        res.json({ message: 'Asset purchased successfully', asset });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
 };
 
-exports.sellAsset = async (req, res) => {
-    const userId = req.body.userId; 
+exports.listAssetForSale = async (req, res) => {
+    const { price } = req.body;
     try {
         const asset = await Asset.findById(req.params.id);
-        const user = await User.findById(userId);
-
-        if (!asset || !user) {
-            return res.status(404).json({ message: 'Asset or User not found' });
+        if (!asset) {
+            return res.status(404).json({ message: 'Asset not found' });
         }
 
-        if (!user.assets.includes(asset._id)) {
-            return res.status(400).json({ message: 'User does not own this asset' });
+        const blockchainResult = await blockchainService.listAssetForSale(asset.tokenId, price, asset.owner);
+
+        asset.price = price;
+        asset.isForSale = true;
+        asset.transactionHash = blockchainResult.transactionHash;
+        await asset.save();
+
+        res.json({ message: 'Asset listed for sale', asset });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+exports.cancelListing = async (req, res) => {
+    try {
+        const asset = await Asset.findById(req.params.id);
+        if (!asset) {
+            return res.status(404).json({ message: 'Asset not found' });
         }
 
-        // Add price back to user's balance and remove asset from user's assets
-        user.token_balance += asset.price;
-        user.assets = user.assets.filter(a => a.toString() !== asset._id.toString());
-        await user.save();
+        // Implement blockchain cancellation here
+        // const blockchainResult = await blockchainService.cancelListing(asset.tokenId, asset.owner);
 
-        res.status(200).json({ message: 'Asset sold successfully', user });
+        asset.isForSale = false;
+        // asset.transactionHash = blockchainResult.transactionHash;
+        await asset.save();
+
+        res.json({ message: 'Asset listing cancelled', asset });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+exports.getAssetsByUser = async (req, res) => {
+    try {
+        const assets = await Asset.find({ createdBy: req.params.userId });
+        res.json(assets);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+exports.getAssetsForSale = async (req, res) => {
+    try {
+        const assets = await Asset.find({ isForSale: true });
+        res.json(assets);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

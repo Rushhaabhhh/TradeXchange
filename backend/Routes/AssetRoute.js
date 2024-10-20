@@ -8,6 +8,10 @@ router.get('/:id', AssetController.getAssetById);
 router.delete('/:id', AssetController.deleteAsset);
 
 router.post('/buy/:id', AssetController.buyAsset);
-router.post('/sell/:id', AssetController.sellAsset);
+router.post('/list/:id', AssetController.listAssetForSale);
+router.post('/cancel-listing/:id', AssetController.cancelListing);
+
+router.get('/user/:userId', AssetController.getAssetsByUser);
+router.get('/for-sale', AssetController.getAssetsForSale);
 
 module.exports = router;

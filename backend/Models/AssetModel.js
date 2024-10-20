@@ -26,6 +26,23 @@ const assetSchema = new mongoose.Schema({
         type: String,
         required: false,
     },
+    tokenId: {
+        type: Number,
+        required: true,
+        unique: true,
+    },
+    isForSale: {
+        type: Boolean,
+        default: true,
+    },
+    owner: {
+        type: String,
+        required: true,
+    },
+    transactionHash: {
+        type: String,
+        required: true,
+    }
 });
 
 module.exports = mongoose.model('Asset', assetSchema);
