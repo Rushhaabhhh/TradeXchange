@@ -18,7 +18,7 @@ const UserProfile = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await axios.get(`https://tradexchange-7rcv.onrender.com/user/${userId}`);
+        const response = await axios.get(`http://localhost:8080/user/${userId}`);
         setUser(response.data);
         setNewUsername(response.data.username); // Set initial username
       } catch (error) {
@@ -39,7 +39,7 @@ const UserProfile = () => {
         setProfileImage(reader.result);
 
         try {
-          await axios.put(`https://tradexchange-7rcv.onrender.com/update/${userId}`, { 
+          await axios.put(`http://localhost:8080/update/${userId}`, { 
             image: reader.result, 
             walletAddress: walletAddress 
           });
@@ -65,7 +65,7 @@ const UserProfile = () => {
 
   const handleUsernameChange = async () => {
     try {
-      await axios.put(`https://tradexchange-7rcv.onrender.com/update/${userId}`, { username: newUsername });
+      await axios.put(`http://localhost:8080/update/${userId}`, { username: newUsername });
       setIsEditingName(false);
     } catch (error) {
       console.error('Error updating username:', error);

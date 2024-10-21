@@ -11,14 +11,12 @@ const port = process.env.PORT || 8080;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Configure CORS to allow requests from any origin
 app.use(cors());
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URL, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  serverSelectionTimeoutMS: 30000,
+  connectTimeoutMS: 30000, 
+  socketTimeoutMS: 45000,
 })
 .then(() => {
   console.log('Connected to MongoDB');

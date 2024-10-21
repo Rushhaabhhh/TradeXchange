@@ -2,6 +2,8 @@ const Asset = require('../Models/AssetModel');
 const User = require('../Models/UserModel');
 const blockchainService = require('../Contracts/blockchain');
 
+const walletAddress = '0xE16C3a29aA28c1B3DB5cF79f21550Ec244f5d00F';
+
 exports.createAsset = async (req, res) => {
     const { title, description, price, userId, image } = req.body;
 
@@ -11,7 +13,7 @@ exports.createAsset = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        const blockchainResult = await blockchainService.createAsset(title, price, user.walletAddress);
+        const blockchainResult = await blockchainService.createAsset(title, price);
 
         const newAsset = new Asset({
             title,
@@ -20,7 +22,7 @@ exports.createAsset = async (req, res) => {
             createdBy: userId,
             image,
             tokenId: blockchainResult.events.Transfer.returnValues.tokenId,
-            owner: user.walletAddress,
+            owner: blockchainResult.from,
             transactionHash: blockchainResult.transactionHash
         });
 

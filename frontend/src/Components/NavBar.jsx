@@ -31,7 +31,7 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     try {
-      await axios.post('https://tradexchange-7rcv.onrender.com/user/logout'); 
+      await axios.post('http://localhost:8080/user/logout'); 
       
       navigate('/'); 
     } catch (error) {

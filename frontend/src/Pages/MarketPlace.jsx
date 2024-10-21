@@ -1,24 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingCart, Bitcoin, X, } from 'lucide-react';
+import { ShoppingCart, Bitcoin, X, AlertCircle, CheckCircle } from 'lucide-react';
 import axios from 'axios';
 import Navbar from '../Components/NavBar';
 
-const AssetCard = ({ asset, handleAddToCart }) => {
+const AssetCard = ({ asset, handleAddToCart, isOwnedByUser }) => {
   const [isHovered, setIsHovered] = useState(false);
-  const [isOwnedByUser, setIsOwnedByUser] = useState(false);
-
-  const buyerId = localStorage.getItem('userId');
-  const sellerId = asset.createdBy;
-
-  useEffect(() => {
-    if (asset.ownerId === buyerId) {
-      setIsOwnedByUser(true);
-    }
-  }, [asset.ownerId, buyerId]);
-
-  const handleBuyNowClick = () => {
-    handleAddToCart(asset);
-  };
 
   return (
     <div
@@ -35,19 +21,13 @@ const AssetCard = ({ asset, handleAddToCart }) => {
           }`}
         />
       </div>
-      <h3 className="text-xl font-bold px-4 py-2">
-        {asset.title || 'Asset Title'}
-      </h3>
-      <p className="text-gray-400 px-4">
-        {asset.description || 'This is a short description of the asset.'}
-      </p>
-      <p className="text-lg font-semibold px-4 py-1">
-        {asset.price ? `${asset.price} ETH` : '$0.00'}
-      </p>
+      <h3 className="text-xl font-bold px-4 py-2">{asset.title}</h3>
+      <p className="text-gray-400 px-4">{asset.description}</p>
+      <p className="text-lg font-semibold px-4 py-1">{asset.price} ETH</p>
 
       {!isOwnedByUser && isHovered && (
         <button
-          onClick={handleBuyNowClick}
+          onClick={() => handleAddToCart(asset)}
           className="absolute left-0 right-0 mx-auto w-full px-4 py-2 bg-blue-600 rounded-b-lg hover:bg-blue-500 transition-colors duration-300 flex items-center justify-center"
         >
           <ShoppingCart className="mr-2" />
@@ -62,14 +42,17 @@ const Marketplace = () => {
   const [assets, setAssets] = useState([]);
   const [cart, setCart] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     const fetchAssets = async () => {
       try {
-        const response = await axios.get('https://tradexchange-7rcv.onrender.com/asset/');
+        const response = await axios.get('http://localhost:8080/asset/');
         setAssets(response.data);
       } catch (error) {
         console.error('Error fetching assets:', error);
+        setErrorMessage('Failed to fetch assets. Please try again later.');
       }
     };
 
@@ -82,6 +65,27 @@ const Marketplace = () => {
 
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen);
+  };
+
+  const handleBuyAsset = async (asset) => {
+    const userId = localStorage.getItem('userId');
+    if (!userId) {
+      setErrorMessage('User not authenticated. Please log in.');
+      return;
+    }
+
+    try {
+      const response = await axios.post(`http://localhost:8080/asset/buy/${asset._id}`, { userId });
+      setSuccessMessage(`Successfully purchased ${asset.title}`);
+      setCart((prevCart) => prevCart.filter((item) => item._id !== asset._id));
+      // Update the asset in the assets state
+      setAssets((prevAssets) =>
+        prevAssets.map((a) => (a._id === asset._id ? { ...a, owner: userId } : a))
+      );
+    } catch (error) {
+      console.error('Error buying asset:', error);
+      setErrorMessage(error.response?.data?.message || 'Failed to purchase asset. Please try again.');
+    }
   };
 
   return (
@@ -100,7 +104,6 @@ const Marketplace = () => {
         )}
       </button>
 
-      {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 flex justify-end top-20">
           <div className="bg-gray-800 w-80 h-full shadow-lg p-6 text-white relative">
@@ -113,11 +116,8 @@ const Marketplace = () => {
             <h2 className="text-2xl font-bold mb-4">Your Cart</h2>
             {cart.length > 0 ? (
               <div className="space-y-4">
-                {cart.map((item, index) => (
-                  <div
-                    key={index}
-                    className="bg-gray-700 p-4 rounded-lg flex justify-between"
-                  >
+                {cart.map((item) => (
+                  <div key={item._id} className="bg-gray-700 p-4 rounded-lg flex justify-between">
                     <div>
                       <h3 className="font-bold">{item.title}</h3>
                       <p>{item.price} ETH</p>
@@ -125,7 +125,10 @@ const Marketplace = () => {
                     <Bitcoin size={24} />
                   </div>
                 ))}
-                <button className="w-full py-2 mt-4 bg-blue-600 rounded-lg hover:bg-blue-500 transition-all">
+                <button
+                  onClick={() => cart.forEach(handleBuyAsset)}
+                  className="w-full py-2 mt-4 bg-blue-600 rounded-lg hover:bg-blue-500 transition-all"
+                >
                   Proceed to Payment
                 </button>
               </div>
@@ -137,9 +140,26 @@ const Marketplace = () => {
       )}
 
       <main className="pt-32 px-4">
+        {errorMessage && (
+          <div className="mb-4 p-4 bg-red-500 rounded-lg flex items-center">
+            <AlertCircle className="h-5 w-5 mr-2" />
+            <span>{errorMessage}</span>
+          </div>
+        )}
+        {successMessage && (
+          <div className="mb-4 p-4 bg-green-500 rounded-lg flex items-center">
+            <CheckCircle className="h-5 w-5 mr-2" />
+            <span>{successMessage}</span>
+          </div>
+        )}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {assets.map((asset) => (
-            <AssetCard key={asset._id} asset={asset} handleAddToCart={handleAddToCart} />
+            <AssetCard
+              key={asset._id}
+              asset={asset}
+              handleAddToCart={handleAddToCart}
+              isOwnedByUser={asset.owner === localStorage.getItem('userId')}
+            />
           ))}
         </div>
       </main>
