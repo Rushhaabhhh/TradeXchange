@@ -48,7 +48,7 @@ const Marketplace = () => {
   useEffect(() => {
     const fetchAssets = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/asset/');
+        const response = await axios.get('https://tradexchange-7rcv.onrender.com/asset/');
         setAssets(response.data);
       } catch (error) {
         console.error('Error fetching assets:', error);
@@ -75,7 +75,7 @@ const Marketplace = () => {
     }
 
     try {
-      const response = await axios.post(`http://localhost:8080/asset/buy/${asset._id}`, { userId });
+      const response = await axios.post(`https://tradexchange-7rcv.onrender.com/asset/buy/${asset._id}`, { userId });
       setSuccessMessage(`Successfully purchased ${asset.title}`);
       setCart((prevCart) => prevCart.filter((item) => item._id !== asset._id));
       // Update the asset in the assets state

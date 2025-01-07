@@ -38,7 +38,7 @@ const Home = () => {
 
   const handleAuth = async (type, email, password) => {
     try {
-      const url = type === 'login' ? 'http://localhost:8080/user/login' : 'http://localhost:8080/user/signup';
+      const url = type === 'login' ? 'https://tradexchange-7rcv.onrender.com/user/login' : 'https://tradexchange-7rcv.onrender.com/user/signup';
       
       const response = await fetch(url, {
         method: 'POST',

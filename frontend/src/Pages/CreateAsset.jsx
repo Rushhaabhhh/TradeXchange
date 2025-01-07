@@ -25,7 +25,7 @@ const CreateAsset = () => {
     }
 
     try {
-      const response = await axios.post('http://localhost:8080/asset/', {
+      const response = await axios.post('https://tradexchange-7rcv.onrender.com/asset/', {
         title,
         description,
         price: parseFloat(price),
