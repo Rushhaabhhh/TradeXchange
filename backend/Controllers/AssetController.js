@@ -2,7 +2,7 @@ const Asset = require('../Models/AssetModel');
 const User = require('../Models/UserModel');
 const blockchainService = require('../Contracts/blockchain');
 
-const walletAddress = '0xE16C3a29aA28c1B3DB5cF79f21550Ec244f5d00F';
+const walletAddress = process.env.WALLET_ADDRESS;
 
 exports.createAsset = async (req, res) => {
     const { title, description, price, userId, image } = req.body;
